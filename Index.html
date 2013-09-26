@@ -80,7 +80,7 @@
                         url: "http://track.diabetrics.co/home/Mobile?callback=?",
                         dataType: 'jsonp',
                         success: function (data, status, jqXHR) {
-                            alert(data.length);
+                           // alert(data.length);
                             for (var i = 0; i < data.length; i++) {
                                 var dato = data[i];
                                 AddPinMark(map, dato.PS_Latitude, dato.PS_Longitude, dato.PS_Name, dato.PS_Direccion, false);
