@@ -27,7 +27,7 @@
 <body>
     <div data-role="page" id="map-page">
         <div data-role="header"   >
-            <h1>Diabetric - POS</h1>
+            <h1>Diabetrics - POS</h1>
         </div>
         <div data-role="content" id="map-canvas">
             <div id="map_canvas"></div>
@@ -72,7 +72,7 @@
                         mapTypeId: google.maps.MapTypeId.G_NORMAL_MAP
                     };
                     var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-                    AddPinMark(map, cerca.lat, cerca.lng, "Yo estoy Aquí", true);
+                    AddPinMark(map, cerca.lat, cerca.lng, "Yo estoy Aquí", "",true);
                    
                     $.ajax({
                         url: "http://track.diabetrics.co/home/Mobile?callback=?",
