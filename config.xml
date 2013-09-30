@@ -1,3 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <widget xmlns = "http://www.w3.org/ns/widgets"
+        xmlns:gap = "http://phonegap.com/ns/1.0"
+        id        = "com.diabetrics.pos"
+        versionCode="10" 
+        version   = "1.0.0">
+
+    <!-- versionCode is optional and Android only -->
+
+    <name>D° POS</name>
+
+    <description>
+        Aplicación de Diabetrics
+    </description>
+
+    <author href="https://build.phonegap.com" email="support@phonegap.com">
+        Pedro Ospino 
+    </author>
+
+</widget>
 <gap:platform name="ios" />
 <gap:platform name="android" />
 <preference name="phonegap-version" value="2.9.0" />
