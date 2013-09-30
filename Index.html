@@ -4,7 +4,9 @@
     <title>Page Title</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
+    <link rel="icon" 
+      type="image/png" 
+      href="pin.png">
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css" />
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
@@ -29,26 +31,28 @@
 <body>
     <div data-role="page" id="map-page">
         <div data-role="header">
-            <a href="#ADD" data-role="button" data-inline="true" data-rel="dialog" data-transition="pop" data-icon="plus" data-iconpos="notext"></a>
+            <a href="#ADD" data-role="button" data-inline="true" data-rel="dialog" data-transition="pop"
+                data-close-btn="right" data-icon="plus" data-iconpos="notext"></a>
 
             <h1>Diabetrics - POS</h1>
-            <a href="javascript:Iniciar()" data-icon="refresh" data-iconpos="notext"></a>
-            <div style="margin-left: 30px;z-index:2; position: absolute; top: 50px; width: 100%; text-align: center;">
-                <input type="search" id="hola" style="width: 80%" placeholder="Direccion" data-theme="c" data-clear-btn="true"/>
+            <a href="javascript:IniciarMap()" data-icon="refresh" data-iconpos="notext"></a>
+            <div style="margin-left: 30px; z-index: 2; position: absolute; top: 50px; width: 90%; text-align: center;">
+                <input type="search" id="txtBusqueda" style="width: 80%" placeholder="Direccion" data-theme="c" data-clear-btn="true" />
             </div>
         </div>
         <div data-role="content" id="map-canvas">
         </div>
     </div>
 
-    <div data-role="page" id="ADD" data-theme="a" class="ui-corner-all" style="height: 80%">
-        <form>
+    <div data-role="page" id="ADD" data-theme="a" style="height: 80%">
+        <form action="javascript:RegisterPoint()">
             <div style="padding: 10px 20px;">
                 <h3>Datos del Punto de Venta</h3>
 
                 <div data-role="fieldcontain">
                     <label for="PS_GroupID">Grupo:</label>
-                    <input type="text" name="PS_GroupID" id="PS_GroupID" value="">
+                    <select  name="PS_GroupID" id="PS_GroupID" >
+                        </select>
                 </div>
 
                 <div data-role="fieldcontain">
@@ -61,16 +65,43 @@
                     <input type="text" name="PS_Direccion" id="PS_Direccion" value="">
                 </div>
 
-                <button type="submit" data-theme="b" data-icon="check">Guardar</button>
-                <button type="reset" data-theme="b" data-icon="check">Cancelar</button>
+                <button type="submit" data-theme="c" data-icon="check">Guardar</button>
+                <a id="btnCancelar" data-role="button" href="javascript:btnCancelar_Click()"  data-theme="c" data-icon="back">Cancelar</a>
 
             </div>
         </form>
     </div>
     <script>
 
-
-
+        var map = null;
+        function btnCancelar_Click() {
+            $('.ui-dialog').dialog('close');
+        }
+        function RegisterPoint() {
+            var obj = new Object;
+            obj.PS_PointSellID = "";
+            obj.PS_Name = $("#PS_Name").val();
+            obj.PS_Direccion = $("#PS_Direccion").val();
+            obj.PS_Longitude = map.getCenter().lng();;
+            obj.PS_Latitude = map.getCenter().lat();;
+            obj.PS_State = "";
+            obj.PS_City = "";
+            obj.PS_Active = "S";
+            obj.PS_GroupID = $("#PS_GroupID").val();
+            $.ajax({
+                url: "http://track.diabetrics.co/PointSell/RegisterMobile?callback=?",
+                dataType: 'jsonp',
+                type: 'GET',
+                data: obj,
+                success: function (data, status, jqXHR) {
+                    alert(data.msg);
+                    if (data.Code == 0) {
+                        btnCancelar_Click();
+                        IniciarMap();
+                    } 
+                }
+            });
+        }
 
         function AddPinMark(map, lat, lng, texto, direccion, isMe) {
             var myLatlng = new google.maps.LatLng(lat, lng);
@@ -98,9 +129,10 @@
             $.mobile.allowCrossDomainPages = true;
             $.support.cors = true;
 
-            Iniciar();
+            IniciarMap();
+            
         });
-        function Iniciar() {
+        function IniciarMap() {
             navigator.geolocation.getCurrentPosition(
                function (position) {
                    var cerca = new Object;
@@ -116,10 +148,14 @@
                        zoomControlOptions: {
                            position: google.maps.ControlPosition.LEFT_CENTER,
                        },
+                       StreetViewControlOptions: {
+                           position: google.maps.ControlPosition.LEFT_CENTER,
+                       },
                    };
-                   var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+                   map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 
-                 
+
+
 
                    AddPinMark(map, cerca.lat, cerca.lng, "Yo estoy Aquí", "", true);
 
@@ -142,6 +178,19 @@
                        var center = map.getCenter();
                        google.maps.event.trigger(map, "resize");
                        map.setCenter(center);
+                   });
+                   $.ajax({
+                       url: "http://track.diabetrics.co/Group/Mobile?callback=?",
+                       dataType: 'jsonp',
+                       success: function (data, status, jqXHR) {
+                           for (var i = 0; i < data.length; i++) {
+                               var dato = data[i];
+                               $('#PS_GroupID').append('<option value="' + dato.GP_GroupID + '" selected="selected">' + dato.GP_Name+ '</option>');
+                           }
+                       },
+                       error: function (jqXHR, textStatus, errorThrown) {
+                           console.log(jqXHR); console.log(textStatus); console.log(errorThrown);
+                       }
                    });
 
                },
