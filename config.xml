@@ -21,7 +21,7 @@
 <preference name="splash-screen-duration" value="1000"/>
 <icon src="pin.png" />
 <gap:splash src="splash.png" />
-<feature name="http://api.phonegap.com/2.9/geolocation"/>
+<feature name="http://api.phonegap.com/1.0/geolocation"/>
 <access origin="*" />
 <preference name="android-minSdkVersion" value="11" />
 </widget>
