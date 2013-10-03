@@ -4,15 +4,14 @@
     <title>Diabetrics POS</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" 
-      type="image/png" 
-      href="pin.png">
+    <link rel="icon"
+        type="image/png"
+        href="pin.png">
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css" />
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
     <script src="http://maps.google.com/maps/api/js?sensor=true&key=AIzaSyBTnpZ8wO0idZWWhR2hSnDAvGNaoXR5xcs" type="text/javascript"></script>
-    <script src="phonegap.js"></script>
-		<style>
+    <style>
         #map-page, #map-canvas {
             width: 100%;
             height: 92%;
@@ -37,9 +36,11 @@
 
             <h1>Diabetrics - POS</h1>
             <a href="javascript:IniciarMap()" data-icon="refresh" data-iconpos="notext"></a>
-            <div style="margin-left: 30px; z-index: 2; position: absolute; top: 50px; width: 90%; text-align: center;">
-                <input type="search" id="txtBusqueda" style="width: 80%" placeholder="Direccion" data-theme="c" data-clear-btn="true" />
-            </div>
+            <form action="javascript:codeAddress();">
+                <div style="margin-left: 30px; z-index: 2; position: absolute; top: 50px; width: 90%; text-align: center;">
+                    <input type="search" id="txtBusqueda" style="width: 80%" placeholder="Direccion" data-theme="c" data-clear-btn="true" />
+                </div>
+            </form>
         </div>
         <div data-role="content" id="map-canvas">
         </div>
@@ -52,8 +53,8 @@
 
                 <div data-role="fieldcontain">
                     <label for="PS_GroupID">Grupo:</label>
-                    <select  name="PS_GroupID" id="PS_GroupID" >
-                        </select>
+                    <select name="PS_GroupID" id="PS_GroupID">
+                    </select>
                 </div>
 
                 <div data-role="fieldcontain">
@@ -67,7 +68,7 @@
                 </div>
 
                 <button type="submit" data-theme="c" data-icon="check">Guardar</button>
-                <a id="btnCancelar" data-role="button" href="javascript:btnCancelar_Click()"  data-theme="c" data-icon="back">Cancelar</a>
+                <a id="btnCancelar" data-role="button" href="javascript:btnCancelar_Click()" data-theme="c" data-icon="back">Cancelar</a>
 
             </div>
         </form>
@@ -75,33 +76,50 @@
     <script>
 
         var map = null;
-        function btnCancelar_Click() {
-            $('.ui-dialog').dialog('close');
-        }
-        function RegisterPoint() {
-            var obj = new Object;
-            obj.PS_PointSellID = "";
-            obj.PS_Name = $("#PS_Name").val();
-            obj.PS_Direccion = $("#PS_Direccion").val();
-            obj.PS_Longitude = map.getCenter().lng();;
-            obj.PS_Latitude = map.getCenter().lat();;
-            obj.PS_State = "";
-            obj.PS_City = "";
-            obj.PS_Active = "S";
-            obj.PS_GroupID = $("#PS_GroupID").val();
-            $.ajax({
-                url: "http://track.diabetrics.co/PointSell/RegisterMobile?callback=?",
-                dataType: 'jsonp',
-                type: 'GET',
-                data: obj,
-                success: function (data, status, jqXHR) {
-                    alert(data.msg);
-                    if (data.Code == 0) {
-                        btnCancelar_Click();
-                        IniciarMap();
-                    } 
+        var geocoder;
+        function codeAddress() {
+            var address = document.getElementById('txtBusqueda').value;
+            geocoder.geocode({ 'address': address }, function (results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    map.setCenter(results[0].geometry.location);
+                } else {
+                    alert('Geocode was not successful for the following reason: ' + status);
                 }
             });
+        }
+
+        function btnCancelar_Click() {
+            $('.ui-dialog').dialog('close');
+
+        }
+        function RegisterPoint() {
+            if (markercenter == null) {
+                alert("No se ha seleccionado ningun punto");
+            } else {
+                var obj = new Object;
+                obj.PS_PointSellID = "";
+                obj.PS_Name = $("#PS_Name").val();
+                obj.PS_Direccion = $("#PS_Direccion").val();
+                obj.PS_Longitude = markercenter.getPosition().lng();;
+                obj.PS_Latitude = markercenter.getPosition().lat();;
+                obj.PS_State = "";
+                obj.PS_City = "";
+                obj.PS_Active = "S";
+                obj.PS_GroupID = $("#PS_GroupID").val();
+                $.ajax({
+                    url: "http://track.diabetrics.co/PointSell/RegisterMobile?callback=?",
+                    dataType: 'jsonp',
+                    type: 'GET',
+                    data: obj,
+                    success: function (data, status, jqXHR) {
+                        alert(data.msg);
+                        if (data.Code == 0) {
+                            btnCancelar_Click();
+
+                        }
+                    }
+                });
+            }
         }
 
         function AddPinMark(map, lat, lng, texto, direccion, isMe) {
@@ -126,39 +144,61 @@
             else
                 marker.setIcon('pin.png');
         }
+        var markercenter = null;
+        function AddPinMarkCenter(event) {
+            if (mapZoom == map.getZoom()) {
+                var myLatlng = event.latLng;
+                if (markercenter != null)
+                    markercenter.setVisible(false);
+                markercenter = new google.maps.Marker({
+                    position: myLatlng,
+                    map: map,
+                    title: "Centro"
+                });
+                map.setCenter(myLatlng);
+            }
+        }
         $(document).ready(function () {
             $.mobile.allowCrossDomainPages = true;
             $.support.cors = true;
 
             IniciarMap();
-            
+
         });
         function IniciarMap() {
+            google.maps.visualRefresh = true;
+            var mapOptions = {
+                zoom: 17,
+                center: new google.maps.LatLng(11.022538503690525, -74.80190634727478),
+                mapTypeId: google.maps.MapTypeId.G_NORMAL_MAP,
+                mapTypeControl: false,
+                panControl: false,
+                zoomControlOptions: {
+                    position: google.maps.ControlPosition.LEFT_CENTER,
+                },
+                StreetViewControlOptions: {
+                    position: google.maps.ControlPosition.LEFT_CENTER,
+                },
+            };
+
+            geocoder = new google.maps.Geocoder();
+
+            map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
             navigator.geolocation.getCurrentPosition(
                function (position) {
-                   var cerca = new Object;
-                   cerca.lat = position.coords.latitude;
-                   cerca.lng = position.coords.longitude;
-                   google.maps.visualRefresh = true;
-                   var mapOptions = {
-                       zoom: 17,
-                       center: new google.maps.LatLng(cerca.lat, cerca.lng),
-                       mapTypeId: google.maps.MapTypeId.G_NORMAL_MAP,
-                       mapTypeControl: false,
-                       panControl: false,
-                       zoomControlOptions: {
-                           position: google.maps.ControlPosition.LEFT_CENTER,
-                       },
-                       StreetViewControlOptions: {
-                           position: google.maps.ControlPosition.LEFT_CENTER,
-                       },
-                   };
-                   map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+                   var mylatlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
 
 
+                   google.maps.event.addListener(map, 'click', function (event) {
+                       mapZoom = map.getZoom();
+                       startLocation = event.latLng;
+                       setTimeout(function () { AddPinMarkCenter(event); }, 600);
+
+                   });
 
 
-                   AddPinMark(map, cerca.lat, cerca.lng, "Yo estoy Aquí", "", true);
+                   AddPinMark(map, mylatlng.lat(), mylatlng.lng(), "Yo estoy Aquí", "", true);
+                   map.setCenter(mylatlng);
 
                    $.ajax({
                        url: "http://track.diabetrics.co/home/Mobile?callback=?",
@@ -186,7 +226,7 @@
                        success: function (data, status, jqXHR) {
                            for (var i = 0; i < data.length; i++) {
                                var dato = data[i];
-                               $('#PS_GroupID').append('<option value="' + dato.GP_GroupID + '" selected="selected">' + dato.GP_Name+ '</option>');
+                               $('#PS_GroupID').append('<option value="' + dato.GP_GroupID + '" selected="selected">' + dato.GP_Name + '</option>');
                            }
                        },
                        error: function (jqXHR, textStatus, errorThrown) {
