@@ -89,6 +89,8 @@
         }
 
         function btnCancelar_Click() {
+            $("#PS_Name").val("");
+            $("#PS_Direccion").val("");
             $('.ui-dialog').dialog('close');
 
         }
@@ -107,6 +109,8 @@
                 obj.PS_Active = "S";
                 obj.PS_GroupID = $("#PS_GroupID").val();
                 $.ajax({
+                    beforeSend: function () { $.mobile.showPageLoadingMsg(); }, //Show spinner
+                    complete: function () { $.mobile.hidePageLoadingMsg() }, //Hide spinner
                     url: "http://track.diabetrics.co/PointSell/RegisterMobile?callback=?",
                     dataType: 'jsonp',
                     type: 'GET',
@@ -114,13 +118,19 @@
                     success: function (data, status, jqXHR) {
                         alert(data.msg);
                         if (data.Code == 0) {
-                            btnCancelar_Click();
-
+                            $("#PS_Name").val("");
+                            $("#PS_Direccion").val("");
+                            markercenter.setVisible(false);
+                            markercenter = null;
+                            AddPinMark(map, obj.PS_Latitude, obj.PS_Longitude, obj.PS_Name, obj.PS_Direccion, false);
+                            $('.ui-dialog').dialog('close');
                         }
                     }
                 });
             }
         }
+
+        
 
         function AddPinMark(map, lat, lng, texto, direccion, isMe) {
             var myLatlng = new google.maps.LatLng(lat, lng);
@@ -202,6 +212,8 @@
 
                    $.ajax({
                        url: "http://track.diabetrics.co/home/Mobile?callback=?",
+                       beforeSend: function () { $.mobile.showPageLoadingMsg(); }, //Show spinner
+                       complete: function () { $.mobile.hidePageLoadingMsg() }, //Hide spinner
                        dataType: 'jsonp',
                        success: function (data, status, jqXHR) {
                            // alert(data.length);
@@ -223,6 +235,8 @@
                    $.ajax({
                        url: "http://track.diabetrics.co/Group/Mobile?callback=?",
                        dataType: 'jsonp',
+                       beforeSend: function () { $.mobile.showPageLoadingMsg(); }, //Show spinner
+                       complete: function () { $.mobile.hidePageLoadingMsg() }, //Hide spinner
                        success: function (data, status, jqXHR) {
                            for (var i = 0; i < data.length; i++) {
                                var dato = data[i];
