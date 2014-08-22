@@ -208,8 +208,8 @@
 
             });
             $.ajax({
-                //url: "http://track.diabetrics.co/home/Mobile?callback=?",
-                url: "http://localhost:2977/home/Mobile?callback=?",
+                url: "http://track.diabetrics.co/home/Mobile?callback=?",
+                //url: "http://localhost:2977/home/Mobile?callback=?",
                 beforeSend: function () { $.mobile.showPageLoadingMsg(); }, //Show spinner
                 complete: function () { $.mobile.hidePageLoadingMsg() }, //Hide spinner
                 dataType: 'jsonp',
@@ -242,8 +242,8 @@
                        map.setCenter(center);
                    });
                    $.ajax({
-                       //url: "http://track.diabetrics.co/Group/Mobile?callback=?",
-                       url: "http://localhost:2977/Group/Mobile?callback=?",
+                       url: "http://track.diabetrics.co/Group/Mobile?callback=?",
+                       //url: "http://localhost:2977/Group/Mobile?callback=?",
                        dataType: 'jsonp',
                        beforeSend: function () { $.mobile.showPageLoadingMsg(); }, //Show spinner
                        complete: function () { $.mobile.hidePageLoadingMsg() }, //Hide spinner
